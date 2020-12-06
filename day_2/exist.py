@@ -1,11 +1,8 @@
-# from __future__ import annotations
-
 from sqlalchemy import create_engine, Column, Integer, String, Sequence, text, func, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, aliased, relationship
 
-
-engine = create_engine("sqlite:///:memory:", echo=True)
+engine = create_engine("sqlite:///:memory:", echo=False)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -35,7 +32,7 @@ class Address(Base):
     user = relationship("User", back_populates="addresses")
 
     def __repr__(self):
-        return f"Addresses (email_address={self.email_addresses})"
+        return f"Addresses (email_address={self.email_address})"
 
 
 Base.metadata.create_all(engine)
@@ -47,3 +44,18 @@ mariusz = User(name="Mariusz", fullname="Mariusz Pudzianowski", nickname="Pudzia
 session.add_all([andrzej, janusz, mariusz])
 session.commit()
 q = engine.execute("SELECT * FROM users;").fetchall()
+
+jack = User(name='Jack', fullname='Jack Doe', nickname='jc123')
+print(jack.addresses)
+jack.addresses = [Address(email_address='jack.doe@gmail.com')]
+print(jack.addresses)
+print(jack.addresses[0].user)
+
+session.add(jack)
+session.commit()
+
+new = Address(email_address='j25@yahoo.com', user_id=4)
+session.add(new)
+session.commit()
+
+print("EXIST")
