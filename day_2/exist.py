@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Sequence, text, func, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Sequence, text, func, ForeignKey, exists
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, aliased, relationship
 
@@ -59,3 +59,16 @@ session.add(new)
 session.commit()
 
 print("EXIST")
+# chcemy zwrocic TYLKO userow z adresami
+stmt = exists().where(Address.user_id == User.id)
+query = session.query(User.name).filter(stmt).all()
+print(query)
+
+
+query = session.query(User)
+
+# filtrujemy wyniki poo... zwroci Userow ktorzy maja jakiekolwiek wyniki
+print(query.filter(User.addresses.any()).all())
+
+# pattern
+print(query.filter(User.addresses.any(Address.email_address.like("%gmail%"))).all())
