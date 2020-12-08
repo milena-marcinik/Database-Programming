@@ -31,6 +31,7 @@ print(edward.id) # znaim to dostaniemy, to musimy zapisac obiekt w bazie danych,
 session = Session()  # bedziemy na instancji dzialac
 session.add(edward)
 session.commit()
+
 q = engine.execute('select * from users').fetchall()
 print(q)
 
