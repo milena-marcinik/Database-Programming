@@ -104,7 +104,7 @@ def add_levels(name, description):
     session.commit()
 
 
-""" ADD REAL SAMPLE DATA (using functions) """
+""" ADD SAMPLE DATA (using functions) """
 
 
 # add levels
