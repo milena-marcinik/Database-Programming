@@ -4,11 +4,16 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+
 engine = create_engine("sqlite:///:memory:", echo=True)
 
 Base = declarative_base()
+
 Session = sessionmaker(bind=engine)
 session = Session()
+
+
+"""CREATE DATABASE"""
 
 
 class Courses(Base):
@@ -64,6 +69,9 @@ class Levels(Base):
 Base.metadata.create_all(engine)
 
 
+""" FUNCTIONS - add data to database """
+
+
 def add_course(lesson, description, language_id, category_id, level_id, start_date, end_date, price):
     dt_start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
     dt_end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -71,7 +79,6 @@ def add_course(lesson, description, language_id, category_id, level_id, start_da
     course = Courses(lessons=lesson, description=description, language_id=language_id, category_id=category_id,
                      level_id=level_id, start_date=dt_start_date, end_date=dt_end_date, price=price)
 
-    session = Session()
     session.add(course)
     session.commit()
 
@@ -79,7 +86,6 @@ def add_course(lesson, description, language_id, category_id, level_id, start_da
 def add_language(name):
     language = Languages(name=name)
 
-    session = Session()
     session.add(language)
     session.commit()
 
@@ -87,7 +93,6 @@ def add_language(name):
 def add_category(name):
     category = Categories(name=name)
 
-    session = Session()
     session.add(category)
     session.commit()
 
@@ -95,41 +100,62 @@ def add_category(name):
 def add_levels(name, description):
     level = Levels(name=name, description=description)
 
-    session = Session()
     session.add(level)
     session.commit()
 
 
+""" ADD REAL SAMPLE DATA (using functions) """
+
+
+# add levels
+levels = [("A0", "A0 level course"), ("A1", "A1 level course"), ("A2", "A2 level course"), ("B1", "B1 level course"),
+          ("B2", "B2 level course"), ("C1", "C1 level course"), ("C2", "C2 level course")]
+
+for level in levels:
+    add_levels(level[0], level[1])
+
+
+# add categories
+categories = ["conventional course", "business course", "adult course", "children course", "exam course"]
+
+for category in categories:
+    add_category(category)
+
+
+# add languages
+languages = ["English", "German", "French", "Spanish", "Italian"]
+
+for language in languages:
+    add_language(language)
+
+
+# add sample courses
 add_course(20, "this is a fun course", 1, 2, 2, '2020-06-16', "2021-03-11", 766.5)
-
-add_levels("A0", "A0 level course")
-add_levels("A1", "A1 level course")
-add_levels("A2", "A2 level course")
-add_levels("B1", "B1 level course")
-add_levels("B2", "B2 level course")
-add_levels("C1", "C1 level course")
-add_levels("C2", "C2 level course")
-
-add_category("conventional course")
-add_category("business course")
-add_category("adult course")
-add_category("children course")
-add_category("exam course")
-
-add_language("English")
-add_language("German")
-add_language("French")
-add_language("Spanish")
-add_language("Italian")
-
-q = engine.execute('select price from Courses order by price desc').scalar()
-print(q)
-
-for course in session.query(Courses):
-    print(course)
-
-for course in session.query(Courses).filter(Courses.price <= 1000).filter(Courses.price >= 0):
-    print(course)
+add_course(28, "this is a fuuuuun course", 2, 1, 1, '2020-12-10', "2021-06-20", 1100)
 
 
-# print(filter_by_price(500, 100))
+""" FUNCTIONS - return data from specific tables """
+
+
+# filter by price
+def filter_by_price(min_price, max_price):
+    filter_courses = []
+    for course in session.query(Courses).filter(Courses.price > min_price, Courses.price < max_price).all():
+        filter_courses.append(course)
+
+    return filter_courses
+
+
+# filter by language
+def filter_by_language(language_name):
+    filter_courses = []
+    language_name = language_name.capitalize()
+    subquery = session.query(Languages.id).filter(Languages.name == language_name).subquery()
+
+    for course in session.query(Courses).filter(Courses.id.in_(subquery)):
+        filter_courses.append(course)
+
+    return filter_courses
+
+
+# print(filter_by_language("german"))
