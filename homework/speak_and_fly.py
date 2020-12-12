@@ -20,7 +20,7 @@ class Courses(Base):
     __tablename__ = "Courses"
 
     id = Column(Integer, primary_key=True)
-    lessons = Column(Integer, nullable=False)
+    lessons_number = Column(Integer, nullable=False)
     description = Column(String(100))
     language_id = Column(Integer, ForeignKey("Languages.id"))
     category_id = Column(Integer, ForeignKey("Categories.id"))
@@ -30,7 +30,7 @@ class Courses(Base):
     price = Column(Float)
 
     def __repr__(self):
-        return f"Courses(id: {self.id}, lessons: {self.lessons}, description: {self.description}), " \
+        return f"Courses(id: {self.id}, lessons_number: {self.lessons_number}, description: {self.description}), " \
                f"language_id: {self.language_id}, category_id: {self.category_id}, level_id: {self.level_id} " \
                f"start_date: {self.start_date}, end_date: {self.end_date}, price: {self.price})"
 
@@ -72,11 +72,11 @@ Base.metadata.create_all(engine)
 """ FUNCTIONS - add data to database """
 
 
-def add_course(lesson, description, language_id, category_id, level_id, start_date, end_date, price):
+def add_course(lessons_number, description, language_id, category_id, level_id, start_date, end_date, price):
     dt_start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
     dt_end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
 
-    course = Courses(lessons=lesson, description=description, language_id=language_id, category_id=category_id,
+    course = Courses(lessons_number=lessons_number, description=description, language_id=language_id, category_id=category_id,
                      level_id=level_id, start_date=dt_start_date, end_date=dt_end_date, price=price)
 
     session.add(course)
