@@ -28,9 +28,9 @@ class Courses(Base):
     end_date = Column(Date)
     price = Column(Float)
 
-    languages = relationship("Languages")
-    categories = relationship("Categories")
-    levels = relationship("Levels")
+    languages = relationship("Languages", order_by="Languages.id", back_populates="courses")
+    categories = relationship("Categories", order_by="Categories.id", back_populates="courses")
+    levels = relationship("Levels", order_by="Levels.id", back_populates="courses")
 
     def __repr__(self):
         return f"Courses(id: {self.id}, lessons_number: {self.lessons_number}, description: {self.description}), " \
@@ -44,6 +44,8 @@ class Languages(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(30))
 
+    courses = relationship("Courses", back_populates="languages")
+
     def __repr__(self):
         return f"Languages(id: {self.id}, name: {self.name})"
 
@@ -53,6 +55,8 @@ class Categories(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(30))
+
+    courses = relationship("Courses", back_populates="categories")
 
     def __repr__(self):
         return f"Categories(id: {self.id}, name: {self.name})"
@@ -64,6 +68,8 @@ class Levels(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(30))
     description = Column(String(100))
+
+    courses = relationship("Courses", back_populates="levels")
 
     def __repr__(self):
         return f"Levels(id: {self.id}, name: {self.name}, description: {self.description})"
@@ -79,7 +85,8 @@ def add_course(lessons_number, description, language_id, category_id, level_id, 
     dt_start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
     dt_end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
 
-    course = Courses(lessons_number=lessons_number, description=description, language_id=language_id, category_id=category_id,
+    course = Courses(lessons_number=lessons_number, description=description, language_id=language_id,
+                     category_id=category_id,
                      level_id=level_id, start_date=dt_start_date, end_date=dt_end_date, price=price)
 
     session.add(course)
@@ -116,18 +123,15 @@ levels = [("A0", "A0 level course"), ("A1", "A1 level course"), ("A2", "A2 level
 for level in levels:
     add_levels(level[0], level[1])
 
-
 categories = ["conventional course", "business course", "adult course", "children course", "exam course"]
 
 for category in categories:
     add_category(category)
 
-
 languages = ["English", "German", "French", "Spanish", "Italian"]
 
 for language in languages:
     add_language(language)
-
 
 add_course(20, "this is a fun course", 1, 2, 2, '2020-06-16', "2021-03-11", 766.5)
 add_course(28, "this is a fuuuuun course", 2, 1, 1, '2020-12-10', "2021-06-20", 1100)
@@ -153,6 +157,5 @@ def filter_by_language(language_name):
         filter_courses.append(course)
 
     return filter_courses
-
 
 # print(filter_by_language("german"))
