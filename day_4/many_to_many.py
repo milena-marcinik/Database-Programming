@@ -21,13 +21,14 @@ post_keywords = Table("post_keywords", Base.metadata,
 
 class User(Base):
     __tablename__ = "users"
+
     id = Column(Integer, Sequence("user_id_seq"), primary_key=True)
     name = Column(String(50))
     fullname = Column(String(50))
     nickname = Column(String(50))
-    posts = relationship(
-        "BlogPost", back_populates="author", lazy="dynamic"
-    )
+
+    posts = relationship("BlogPost", back_populates="author", lazy="dynamic")
+    comments = relationship("Comment", back_populates="author")
 
     def __repr__(self):
         return f"User(id: {self.id}, name: {self.name})"
@@ -46,9 +47,10 @@ class BlogPost(Base):
     keywords = relationship(
         "Keyword",
         secondary=post_keywords,
-        back_populates="posts"
+        back_populates="posts",
     )
     author = relationship(User, back_populates="posts")
+    comments = relationship("Comment", back_populates="post")
 
     def __init__(self, headline, body, author):
         self.author = author
@@ -76,6 +78,23 @@ class Keyword(Base):
 
     def __repr__(self):
         return f"Keyword({self.id}, {self.keyword})"
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(40))
+    content = Column(Text)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+
+    post = relationship("BlogPost", back_populates="comments")
+    author = relationship("User", back_populates="comments")
+    # reactions = relationship("Reaction", back_populates="comments")
+
+    def __repr__(self):
+        return f"Comment(id: {self.id}, author: {self.author})"
 
 
 Base.metadata.create_all(engine)
