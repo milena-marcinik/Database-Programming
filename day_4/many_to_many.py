@@ -8,7 +8,6 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 # association table
-print("ASSOCIATION TABLE")
 post_keywords = Table("post_keywords", Base.metadata,
                       Column("post_id", ForeignKey("posts.id"), primary_key=True),
                       Column("keyword_id", ForeignKey("keywords.id"), primary_key=True)
@@ -29,6 +28,7 @@ class User(Base):
 
     posts = relationship("BlogPost", back_populates="author", lazy="dynamic")
     comments = relationship("Comment", back_populates="author")
+    reactions = relationship("Reaction", back_populates="user")
 
     def __repr__(self):
         return f"User(id: {self.id}, name: {self.name})"
@@ -51,6 +51,7 @@ class BlogPost(Base):
     )
     author = relationship(User, back_populates="posts")
     comments = relationship("Comment", back_populates="post")
+    reactions = relationship("Reaction", back_populates="post")
 
     def __init__(self, headline, body, author):
         self.author = author
@@ -91,10 +92,26 @@ class Comment(Base):
 
     post = relationship("BlogPost", back_populates="comments")
     author = relationship("User", back_populates="comments")
-    # reactions = relationship("Reaction", back_populates="comments")
+    reactions = relationship("Reaction", back_populates="comments")
 
     def __repr__(self):
         return f"Comment(id: {self.id}, author: {self.author})"
+
+
+class Reaction(Base):
+    __tablename__ = "reactions"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    post_id = Column(Integer, ForeignKey("posts.id"))
+    comment_id = Column(Integer, ForeignKey("comments.id"))
+
+    post = relationship("BlogPost", back_populates="reactions")
+    user = relationship("User", back_populates="reactions")
+    comments = relationship("Comment", back_populates="reactions")
+
+    def __repr__(self):
+        return f"Reaction(id={self.id}"
 
 
 Base.metadata.create_all(engine)
@@ -118,3 +135,16 @@ print(session.query(Keyword).all())
 
 keyword_filter = BlogPost.keywords.any(keyword="world")
 print(session.query(BlogPost).filter(keyword_filter).all())
+
+
+print("REACTION")
+comment = Comment(title="Title", content="Content", post=post, author=jack)
+session.add(comment)
+session.commit()
+
+comment.reactions.append(Reaction(user=jack))
+post.reactions.append(Reaction(user=jack))
+session.commit()
+
+print(comment.reactions)
+print(len(comment.reactions))
