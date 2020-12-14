@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Table, Column, ForeignKey, Integer, Sequence, String, Text
+from sqlalchemy import create_engine, Table, Column, ForeignKey, Integer, Sequence, String, Text, CheckConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -100,6 +100,11 @@ class Comment(Base):
 
 class Reaction(Base):
     __tablename__ = "reactions"
+    __table_args__ = (
+        CheckConstraint(
+            "(post_id IS NULL OR comment_id IS NULL) AND NOT (post_id IS NULL AND comment_id IS NULL)"
+        ),
+    )
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
@@ -116,10 +121,13 @@ class Reaction(Base):
 
 Base.metadata.create_all(engine)
 
-
 jack = User(name='Jack', fullname='Jack Doe', nickname='jc123')
-session.add(jack)
+andrzej = User(name="Andrzej", fullname="Andrzej Gołota", nickname="Andżej")
+janusz = User(name="Janusz", fullname="Janusz Tracz", nickname="prywaciarz")
+session.add_all([jack, andrzej, janusz])
 session.commit()
+
+
 
 post = BlogPost("Jack's first post", "Hello world", jack)
 session.add(post)
@@ -135,7 +143,6 @@ print(session.query(Keyword).all())
 
 keyword_filter = BlogPost.keywords.any(keyword="world")
 print(session.query(BlogPost).filter(keyword_filter).all())
-
 
 print("REACTION")
 comment = Comment(title="Title", content="Content", post=post, author=jack)
