@@ -13,13 +13,14 @@ users = [
 
 # breakpoint() i potem mozna w terminalu w pdb wpisać np "users" i sprawdzic czym są
 
+
 def add_users(engine, users):
     results = []
     for (user_id, name, nick) in users:
-        result = engine.execute(
+        insert_into = engine.execute(
             f"INSERT INTO Users values('{user_id}', '{name}', '{nick}')"
         )
-        results.append(result)
+        results.append(insert_into)
     return results
 
 
