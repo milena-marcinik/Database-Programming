@@ -64,7 +64,6 @@ stmt = exists().where(Address.user_id == User.id)
 query = session.query(User.name).filter(stmt).all()
 print(query)
 
-
 query = session.query(User)
 
 # filtrujemy wyniki poo... zwroci Userow ktorzy maja jakiekolwiek wyniki
